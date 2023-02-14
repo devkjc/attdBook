@@ -1,9 +1,11 @@
 package com.toy.atddbook.service;
 
+import com.toy.atddbook.DatabaseCleanup;
 import com.toy.atddbook.domain.Book;
 import com.toy.atddbook.dto.BookRequest;
 import com.toy.atddbook.dto.BookResponse;
 import com.toy.atddbook.repository.BookRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +16,7 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(properties = "test")
 public class BookServiceTest {
 
     @Autowired
@@ -22,6 +24,14 @@ public class BookServiceTest {
 
     @Autowired
     private BookRepository bookRepository;
+
+    @Autowired
+    private DatabaseCleanup databaseCleanup;
+
+    @BeforeEach
+    void setUp() {
+        databaseCleanup.execute();
+    }
 
     @Test
     void 책_저장() {
@@ -60,7 +70,7 @@ public class BookServiceTest {
     @Test
     void 책_목록_조회() {
         //given
-        int size = 10;
+        int size = 15;
         IntStream.range(0, size).forEach(value -> {
             saveBook("bookName" + value);
         });

@@ -3,7 +3,6 @@ package com.toy.atddbook;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.metamodel.EntityType;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ActiveProfiles;
@@ -24,7 +23,7 @@ public class DatabaseCleanup implements InitializingBean {
     public void afterPropertiesSet() {
         tableNames = entityManager.getMetamodel().getEntities().stream()
                 .filter(e -> e.getJavaType().getAnnotation(Entity.class) != null)
-                .map(EntityType::getName)
+                .map(entityType -> convertToUpperCamelToLowerUnderscore(entityType.getName()))
                 .collect(Collectors.toList());
     }
 
@@ -36,9 +35,25 @@ public class DatabaseCleanup implements InitializingBean {
         for (String tableName : tableNames) {
             entityManager.createNativeQuery("TRUNCATE TABLE " + tableName).executeUpdate();
             entityManager.createNativeQuery("ALTER TABLE " + tableName
-            			+ "ALTER COLUMN ID RESTART WITH 1").executeUpdate();
+                    + " ALTER COLUMN ID RESTART WITH 1").executeUpdate();
         }
 
         entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY TRUE").executeUpdate();
+    }
+
+    private String convertToUpperCamelToLowerUnderscore(String input) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (Character.isUpperCase(c)) {
+                if (i > 0) {
+                    result.append('_');
+                }
+                result.append(Character.toLowerCase(c));
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
     }
 }

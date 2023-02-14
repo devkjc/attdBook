@@ -1,5 +1,6 @@
 package com.toy.atddbook.controller;
 
+import com.toy.atddbook.DatabaseCleanup;
 import com.toy.atddbook.dto.BookRequest;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
@@ -8,6 +9,7 @@ import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,9 @@ public class BookControllerTest {
 
     protected RequestSpecification spec;
 
+    @Autowired
+    private DatabaseCleanup databaseCleanup;
+
     @BeforeEach
     void setUpRestDocs() {
         this.spec = new RequestSpecBuilder()
@@ -35,6 +40,8 @@ public class BookControllerTest {
     @BeforeEach
     void setUp() {
         RestAssured.port = port;
+
+        databaseCleanup.execute();
 
         BookRequest bookRequest = getBookRequest("책이름");
 
@@ -89,12 +96,6 @@ public class BookControllerTest {
         assertThat(response.body().jsonPath().getString("bookName")).isEqualTo(bookName);
     }
 
-    private static BookRequest getBookRequest(String bookName) {
-        return BookRequest.builder()
-                .bookName(bookName)
-                .build();
-    }
-
     @Test
     void 책_대여() {
 
@@ -108,6 +109,12 @@ public class BookControllerTest {
         //then
         assertHttpOK(response);
         assertThat(response.body().jsonPath().getString("isRent")).isEqualTo("false");
+    }
+
+    private static BookRequest getBookRequest(String bookName) {
+        return BookRequest.builder()
+                .bookName(bookName)
+                .build();
     }
 
     private static void assertHttpOK(ExtractableResponse<Response> response) {

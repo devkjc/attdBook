@@ -25,6 +25,9 @@ public class Book {
     private boolean isRent = true;
 
     public void rent() {
+        if (!isRent) {
+            throw new RuntimeException("대여 할 수 없는 책입니다.");
+        }
         isRent = false;
     }
 

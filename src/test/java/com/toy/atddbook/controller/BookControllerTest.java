@@ -1,6 +1,5 @@
 package com.toy.atddbook.controller;
 
-import com.toy.atddbook.domain.Book;
 import com.toy.atddbook.dto.BookRequest;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
@@ -36,6 +35,13 @@ public class BookControllerTest {
     @BeforeEach
     void setUp() {
         RestAssured.port = port;
+
+        BookRequest bookRequest = getBookRequest("책이름");
+
+        ExtractableResponse<Response> response =
+            RestAssured.given(this.spec).body(bookRequest).log().all()
+                .when().post("/book")
+                .then().log().all().extract();
     }
 
     @Test
@@ -71,9 +77,7 @@ public class BookControllerTest {
 
         //given
         String bookName = "톰소여의 모험";
-        Book 톰소여의_모험 = BookRequest.builder()
-                .bookName(bookName)
-                .build().toEntity();
+        BookRequest 톰소여의_모험 = getBookRequest(bookName);
 
         //when
         ExtractableResponse<Response> response =
@@ -83,6 +87,12 @@ public class BookControllerTest {
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.CREATED.value());
         assertThat(response.body().jsonPath().getString("bookName")).isEqualTo(bookName);
+    }
+
+    private static BookRequest getBookRequest(String bookName) {
+        return BookRequest.builder()
+                .bookName(bookName)
+                .build();
     }
 
     @Test
@@ -97,7 +107,7 @@ public class BookControllerTest {
                     .then().log().all().extract();
         //then
         assertHttpOK(response);
-        assertThat(response.body().jsonPath().getString("isRent")).isEqualTo(false);
+        assertThat(response.body().jsonPath().getString("isRent")).isEqualTo("false");
     }
 
     private static void assertHttpOK(ExtractableResponse<Response> response) {

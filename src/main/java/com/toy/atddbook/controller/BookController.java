@@ -28,7 +28,7 @@ public class BookController {
 
     @GetMapping("/{bookId}")
     public ResponseEntity<BookResponse> getBook(@PathVariable long bookId) {
-        return ResponseEntity.ok(bookService.getBook(bookId));
+        return ResponseEntity.ok(bookService.getBookResponse(bookId));
     }
 
     @PostMapping
